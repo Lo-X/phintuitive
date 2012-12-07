@@ -17,7 +17,7 @@ class Config {
 	static $theme = 'default';
 	static $canCommentPosts = true;
 	static $canCommentPages = false;
-	static $cacheLayout = 30;
+	static $cacheLayout = false;
 	
 	static $databases = array(
 			'default' => array(
