@@ -4,7 +4,7 @@ PhIntuitive - Fast websites development framework
 [![PhIntuitive](http://loicboutter.fr/images/portfolio/preview_phintuitive.png)](http://www.loicboutter.fr/projet-phintuitive)
 
 PhIntuitive is a php framework for fast websites development. It uses the MVC design with simple ORM Models, useful helpers and components.
-With PhIntuitive, you do not need to be an high skilled programmer to produce flexible and efective code !
+With PhIntuitive, you do not need to be an high skilled programmer to produce flexible and effective code !
 
 Links
 ------
