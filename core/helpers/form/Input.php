@@ -19,6 +19,7 @@
 class Input {
 
 	protected $name;
+	protected $model;
 	protected $type;
 	protected $value = '';
 	protected $class = 'input';
@@ -29,9 +30,10 @@ class Input {
 	protected $values;
 
 
-	public function __construct($name, $options = array())
+	public function __construct($name, $model, $options = array())
 	{
 		$this->name = $name;
+		$this->model = $model;
 
 		$this->setOptions($options);
 	}
@@ -83,7 +85,7 @@ class Input {
 				$tag .= '<div class="'.$this->class.'">';
 				if($this->label)
 					$tag .= '<label for="'.$this->id.'">'.$this->label.'</label>';
-				$tag .= '<textarea name="'.$this->name.'" id="'.$this->id.'" placeholder="'.$this->placeholder.'">'.$this->value.'</textarea>';
+				$tag .= '<textarea name="'.$this->model.'['.$this->name.']" id="'.$this->id.'" placeholder="'.$this->placeholder.'">'.$this->value.'</textarea>';
 				$tag .= '</div>';
 			break;
 
@@ -92,7 +94,7 @@ class Input {
 				{
 					$tag .= '<div class="'.$this->class.'">';
 					foreach ($this->values as $label => $value) {
-						$tag .= '<input type="radio" name="'.$this->name.'" id="'.$this->id.'.'.$value.'" value="'.$value.'"';
+						$tag .= '<input type="radio" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'.'.$value.'" value="'.$value.'"';
 						if($value == $this->value)
 							$tag .= ' checked';
 						$tag .= ' /> ';
@@ -104,7 +106,7 @@ class Input {
 
 			case 'checkbox':
 				$tag .= '<div class="'.$this->class.'">';
-				$tag .= '<input type="checkbox" name="'.$this->name.'" id="'.$this->id.'"';
+				$tag .= '<input type="checkbox" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'"';
 				if($this->value)
 					$tag .= ' value="'.$this->value.'" checked';
 				$tag .= ' /> ';
@@ -117,7 +119,7 @@ class Input {
 				{
 					$tag .= '<div class="'.$this->class.'">';
 					$tag .= '<label for="'.$this->id.'">'.$this->label.'</label> ';
-					$tag .= '<select name="'.$this->name.'" id="'.$this->id.'">';
+					$tag .= '<select name="'.$this->model.'['.$this->name.']" id="'.$this->id.'">';
 
 					if(!empty($this->placeholder))
 						$tag .= '<option>---'.$this->placeholder.'---</option>';
@@ -140,13 +142,13 @@ class Input {
 			break;
 
 			case 'hidden':
-				$tag .= '<input type="hidden" name="'.$this->name.'" id="'.$this->id.'" value="'.$this->value.'" />';
+				$tag .= '<input type="hidden" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'" value="'.$this->value.'" />';
 			break;
 
 			default:
 				$tag .= '<div class="'.$this->class.'">';
 				$tag .= '<label for="'.$this->id.'">'.$this->label.'</label>';
-				$tag .= '<input type="'.$this->type.'" name="'.$this->name.'" id="'.$this->id.'"';
+				$tag .= '<input type="'.$this->type.'" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'"';
 				if(!empty($this->value))
 					$tag .= ' value="'.$this->value.'"';
 				if(!empty($this->placeholder))
