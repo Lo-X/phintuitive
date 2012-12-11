@@ -72,27 +72,30 @@ class Input {
 
 		if(isset($options['values']) && is_array($options['values']))
 			$this->values = $options['values'];
+
+		if(!empty($options['errorMessage']))
+		{
+			$this->class .= ' error';
+			$this->errorMessage = $options['errorMessage'];
+		}
 	}
 
 
 	public function tag()
 	{
-		$tag = '';
+		$tag = '<div class="'.$this->class.'">';
 
 		switch($this->type)
 		{
 			case 'textarea':
-				$tag .= '<div class="'.$this->class.'">';
 				if($this->label)
 					$tag .= '<label for="'.$this->id.'">'.$this->label.'</label>';
 				$tag .= '<textarea name="'.$this->model.'['.$this->name.']" id="'.$this->id.'" placeholder="'.$this->placeholder.'">'.$this->value.'</textarea>';
-				$tag .= '</div>';
 			break;
 
 			case 'radio':
 				if(is_array($this->values))
 				{
-					$tag .= '<div class="'.$this->class.'">';
 					foreach ($this->values as $label => $value) {
 						$tag .= '<input type="radio" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'.'.$value.'" value="'.$value.'"';
 						if($value == $this->value)
@@ -100,24 +103,20 @@ class Input {
 						$tag .= ' /> ';
 						$tag .= '<label for="'.$this->id.'.'.$value.'">'.$label.'</label> <br />';
 					}
-					$tag .= '</div>';
 				}
 			break;
 
 			case 'checkbox':
-				$tag .= '<div class="'.$this->class.'">';
 				$tag .= '<input type="checkbox" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'"';
 				if($this->value)
 					$tag .= ' value="'.$this->value.'" checked';
 				$tag .= ' /> ';
 				$tag .= '<label for="'.$this->id.'">'.$this->label.'</label>';
-				$tag .= '</div>';
 			break;
 
 			case 'select':
 				if(is_array($this->values))
 				{
-					$tag .= '<div class="'.$this->class.'">';
 					$tag .= '<label for="'.$this->id.'">'.$this->label.'</label> ';
 					$tag .= '<select name="'.$this->model.'['.$this->name.']" id="'.$this->id.'">';
 
@@ -131,22 +130,18 @@ class Input {
 						$tag .= '>'.$label.'</option>';
 					}
 					$tag .= '</select>';
-					$tag .= '</div>';
 				}
 			break;
 
 			case 'submit':
-				$tag .= '<div class="'.$this->class.'">';
 				$tag .= '<input type="submit" id="'.$this->id.'" value="'.$this->value.'" />';
-				$tag .= '</div>';
 			break;
 
 			case 'hidden':
-				$tag .= '<input type="hidden" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'" value="'.$this->value.'" />';
+				$tag = '<input type="hidden" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'" value="'.$this->value.'" />';
 			break;
 
 			default:
-				$tag .= '<div class="'.$this->class.'">';
 				$tag .= '<label for="'.$this->id.'">'.$this->label.'</label>';
 				$tag .= '<input type="'.$this->type.'" name="'.$this->model.'['.$this->name.']" id="'.$this->id.'"';
 				if(!empty($this->value))
@@ -154,9 +149,14 @@ class Input {
 				if(!empty($this->placeholder))
 					$tag .= ' placeholder="'.$this->placeholder.'"';
 				$tag .= ' />';
-				$tag .= '</div>';
 			break;
 		}
+
+		if(isset($this->errorMessage))
+			$tag .= '<span class="errorMessage">'.$this->errorMessage.'</span>';
+		
+		if($this->type != 'hidden')
+			$tag .= '</div>';
 
 		return $tag;
 	}

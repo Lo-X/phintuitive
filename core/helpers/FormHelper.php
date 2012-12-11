@@ -29,62 +29,73 @@ class FormHelper extends Helper {
 	{
 		if(is_array($data))
 			$this->data = current($data);
+	}
 
-		debug($this->data);
+	public function setErrors($errors)
+	{
+		if(is_array($errors))
+			$this->errors = $errors;
 	}
 
 
 	private function _getFieldByName($name)
 	{
+		// If a value has been set
 		$value = '';
 		if(isset($this->data[$this->model][$name]))
 			$value = $this->data[$this->model][$name];
+
+		// If there's an error for that field
+		$error = '';
+		if(isset($this->errors[$name]))
+			$error = $this->errors[$name];
+
 		switch($name)
 		{
 			case 'content':
-				return new Input($name, $this->model, array('type' => 'textarea', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'textarea', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 			case 'id';
-				return new Input($name, $this->model, array('type' => 'hidden', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'hidden', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 			case 'name':
 			case 'title':
-				return new Input($name, $this->model, array('type' => 'text', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'text', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 			case 'password':
 			case 'passwd':
 			case 'pass':
-				return new Input($name, $this->model, array('type' => 'password', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'password', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 			case 'email':
 			case 'mail':
-				return new Input($name, $this->model, array('type' => 'email', 'errorMessage' => '', 'value' => $value, 'rules' => array('rule' => 'email')));
+				return new Input($name, $this->model, array('type' => 'email', 'errorMessage' => $error, 'value' => $value, 'rules' => array('rule' => 'email')));
 			break;
 
 			case 'url':
 			case 'site':
 			case 'website':
 			case 'link':
-				return new Input($name, $this->model, array('type' => 'url', 'errorMessage' => '', 'value' => $value, 'rules' => array('rule' => 'url')));
+				return new Input($name, $this->model, array('type' => 'url', 'errorMessage' => $error, 'value' => $value, 'rules' => array('rule' => 'url')));
 			break;
 
 			case 'online':
 			case 'show':
-				return new Input($name, $this->model, array('type' => 'checkbox', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'checkbox', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 			case 'type':
 			case 'category':
-				return new Input($name, $this->model, array('type' => 'select', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'select', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 
 
 			default:
-				return new Input($name, $this->model, array('type' => 'text', 'errorMessage' => '', 'value' => $value, 'rules' => array()));
+				return new Input($name, $this->model, array('type' => 'text', 'errorMessage' => $error, 'value' => $value, 'rules' => array()));
 			break;
 		}
 	}

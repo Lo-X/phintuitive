@@ -21,6 +21,7 @@ class Model {
 	public $lastInsertId = null;
 	public $prefix = '';
 	public $fields = array();
+	public $rules = array();
 	protected $hasOne = array();
 	protected $belongsTo = array();
 	protected $hasMany = array();
@@ -28,6 +29,7 @@ class Model {
 	protected $validate = array();
 	private $_fields = array();
 	private $_all_fields = array();
+	private $_invalid_fields = array();
 
 	static $connections = array();
 	
@@ -430,6 +432,46 @@ class Model {
 		
 		return current(current($pre->fetchAll(PDO::FETCH_BOTH)));
 	}
+
+
+
+
+	public function check($data)
+	{
+		$bool = true;
+		if(empty($this->rules))
+			return true;
+
+		$data = $data[$this->name];
+
+		foreach ($this->rules as $field => $rulesArray) {
+			// If the field isn't even in the posted data, we create a temp one.
+			// The Rule::check will return false if that field was necessary
+			if(empty($data[$field]))
+				$data[$field] = '';
+
+			// Give the field and rules to the RuleHelper (aka: Validator)
+			if(!$this->Validator->check($data[$field], $rulesArray))
+			{
+				// If the RuleHelper returns false, the data is not valid
+				$bool = false;
+				// Add entry in the error array
+				if(isset($rulesArray['message']))
+					$this->_invalid_fields[$field] = $rulesArray['message'];
+				else
+					$this->_invalid_fields[$field] = ' ';
+			}
+		}
+
+		return $bool;
+	}
+
+
+	public function invalidFields()
+	{
+		return $this->_invalid_fields;
+	}
+
 	
 	
 	
