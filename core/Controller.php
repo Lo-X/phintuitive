@@ -77,12 +77,6 @@ class Controller {
 		foreach ($this->helpers as $helperName) {
 			if(!App::load($helperName, 'helper') && Config::$debug > 0)
 				exit('Try to load Helper '.$helperName.' that does not exists !');
-
-			// Instances helpers in controller attributes
-			$helperName = ucfirst($helperName);
-			$class = $helperName.'Helper';
-			if(!isset($this->$helperName))
-				$this->$helperName = new $class;
 		}
 
 
