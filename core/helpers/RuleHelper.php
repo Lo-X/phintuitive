@@ -15,8 +15,9 @@
 
 
 
-class Rule
-{
+class RuleHelper extends Helper {
+
+
 	public static function check($value, $rules)
 	{
 		if(isset($rules['required']) && empty($value))

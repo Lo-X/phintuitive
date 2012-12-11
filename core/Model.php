@@ -11,7 +11,6 @@
 *	@version 2.0.0
 */
 
-
 class Model {
 	
 	public $db = 'default';
@@ -20,7 +19,8 @@ class Model {
 	public $name  = false;
 	public $primaryKey = 'id';
 	public $lastInsertId = null;
-	protected $fields = array();
+	public $prefix = '';
+	public $fields = array();
 	protected $hasOne = array();
 	protected $belongsTo = array();
 	protected $hasMany = array();
@@ -43,6 +43,8 @@ class Model {
 		if($this->name == false)
 			$this->name = get_class($this);
 
+		
+
 		if(empty($this->fields))
 			$this->fields[] = $this->primaryKey;
 
@@ -55,12 +57,20 @@ class Model {
 		// Creation of other models
 		if(!$inspected)
 			$this->_inspect();
+
+
+		// Validator
+		App::load('Rule', 'helper');
+		$this->Validator = new RuleHelper();
 	}
 
 	private function _openDB()
 	{
 		// Connection to database
 		$conf = Config::$databases[$this->db];
+		$this->prefix = $conf['prefix'];
+		if(!empty($this->prefix))
+			$this->table = $this->prefix.'_'.$this->table;
 		if(isset(Model::$connections[$this->db]))	return;
 		try {
 			$pdo = new PDO('mysql:dbname='.$conf['database'].';host='.$conf['host'], 
@@ -252,12 +262,7 @@ class Model {
 			// Foreach of our fields as alias => field
 			foreach (current($this->_fields) as $alias => $field) {
 				// The index->OurName->field = valueOf(element->alias)
-				$result[$elem[$this->name.'_'.$this->primaryKey]][$field] = $elem[$alias];
-			}
-			foreach ($this->_all_fields as $depname => $dep) {
-				foreach ($dep as $alias => $field) {
-					$result[$elem[$this->name.'_'.$this->primaryKey]][$depname][$elem[$depname.'_'.$this->$depname->primaryKey]][$field] = $elem[$alias];
-				}
+				$result[$elem[$this->name.'_'.$this->primaryKey]][$this->name][$field] = $elem[$alias];
 			}
 		}
 
@@ -426,7 +431,7 @@ class Model {
 		return current(current($pre->fetchAll(PDO::FETCH_BOTH)));
 	}
 	
-	/*
+	
 	
 	public function save($data)
 	{
@@ -436,6 +441,7 @@ class Model {
 		// On rempli un tableau avec les champs passés
 		$fields = array();
 		$d = array();
+		$data = $data[$this->name];
 		foreach($data as $k => $v) {
 			$fields[] = "$k=:$k";
 			$d[":$k"] = $v;
@@ -468,7 +474,7 @@ class Model {
 
 		$sql = "OPTIMIZE TABLE {$this->table}";
 		$pdo->query($sql);
-	}*/
+	}
 
 
 

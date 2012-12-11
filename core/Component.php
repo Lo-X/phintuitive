@@ -15,9 +15,9 @@
 class Component {
 
 
-	public function __construct()
+	public function __construct(Request $request = null)
 	{
-		
+
 	}
 
 }

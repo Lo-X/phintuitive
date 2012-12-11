@@ -14,10 +14,9 @@
 
 class Helper {
 
-
-	public function __construct()
+	public function __construct(Request $request = null)
 	{
-		
-	}
 
+	}
+	
 }

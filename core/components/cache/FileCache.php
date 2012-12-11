@@ -13,7 +13,7 @@
 
 require_once('Cachable.php');
 
-class FileCache implements Cachable
+class FileCache extends Component implements Cachable
 {
 	protected $filepath;
 	protected $duration = 1;

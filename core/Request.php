@@ -25,6 +25,11 @@ class Request {
 			$this->url = $_SERVER['REQUEST_URI'];
 		else
 			$this->url = '';
+
+		if(isset($_POST))
+			$this->data = $_POST;
+		else
+			$this->data = array();
 	}
 	
 }
