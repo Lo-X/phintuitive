@@ -23,31 +23,24 @@ class RuleHelper extends Helper {
 		if(isset($rules['required']) && empty($value))
 			return false;
 
+		if(isset($rules['minLength']) && strlen($value) < $rules['minLength'])
+			return false;
+
+		if(isset($rules['maxLength']) && strlen($value) > $rules['maxLength'])
+			return false;
+					
+		if(isset($rules['minValue']) && $value < $rules['minValue'])
+			return false;
+
+		if(isset($rules['maxValue']) && $value > $rules['maxValue'])
+			return false;
+
 		if(isset($rules['rule']))
 		{
 			switch($rules['rule'])
 			{
 				case 'alphaNumeric':
 					if(!preg_match('!^([a-zA-Z0-9]+)$!', $value))
-						return false;
-				break;
-
-				case 'length':
-					if(isset($rules['min']) && strlen($value) < $rules['min'])
-						return false;
-
-					if(isset($rules['max']) && strlen($value) > $rules['max'])
-						return false;
-				break;
-
-				case 'range':
-					if(!is_numeric($value))
-						return false;
-
-					if(isset($rules['min']) && $value < $rules['min'])
-						return false;
-
-					if(isset($rules['max']) && $value > $rules['max'])
 						return false;
 				break;
 
@@ -62,6 +55,7 @@ class RuleHelper extends Helper {
 				break;
 
 				case 'number':
+				case 'numeric':
 					if(!is_numeric($value))
 						return false;
 				break;
