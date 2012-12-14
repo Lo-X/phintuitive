@@ -15,13 +15,6 @@
 class SessionComponent extends Component {
 	
 	
-	public function __construct($request = null)
-	{
-		
-	}
-
-
-	
 	public function destroy()
 	{
 		// Suppression de toutes les variables et destruction de la session
@@ -50,34 +43,6 @@ class SessionComponent extends Component {
 		return false;
 	}
 	
-	public function isUser()
-	{
-		if(isset($_SESSION['rank']))
-		{
-			if($_SESSION['rank'] >= 1)	return true;
-		}
-		return false;
-	}
-	
-	public function isMod()
-	{
-		if(isset($_SESSION['rank']))
-		{
-			if($_SESSION['rank'] >= 2)	return true;
-		}
-		return false;
-	}
-	
-	public function isAdmin()
-	{
-		if(isset($_SESSION['rank']))
-		{
-			if($_SESSION['rank'] >= 3)	return true;
-		}
-		return false;
-	}
-
-	
 
 	public function setFlash($text, $level = "error")
 	{
@@ -87,10 +52,11 @@ class SessionComponent extends Component {
 
 	public function flash()
 	{
-		if(isset($_SESSION['flash-content']))
+		if(isset($_SESSION['flash-content'])) {
 			echo '<div class="alert alert-'.$_SESSION['flash-level'].'"><span class="close"><a href="#">x</a></span>'.$_SESSION['flash-content'].'</div>';
-		unset($_SESSION['flash-content']);
-		unset($_SESSION['flash-level']);
+			unset($_SESSION['flash-content']);
+			unset($_SESSION['flash-level']);
+		}
 	}
 	
 }
