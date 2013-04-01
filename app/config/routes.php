@@ -6,7 +6,7 @@
 *	Licensed under The MIT License
 *	Redistributions of files must retain the above copyright notice.
 *
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
+*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
 *	@author Boutter Loïc
 *	@version 2.0.0
 */
@@ -22,7 +22,13 @@
 
 // Connections
 	/*
-	This connect a well (eye-visitor) formated URL to the view action of controller Posts
+	This connect a well (eye-visitor) formated URL for the website root
+	*/
+	//Router::connect('^$', 'posts/index/');
+
+
+	/*
+	This connect a well (eye-visitor) formated URL for posts
 	*/
 	Router::connect('post/:slug-:id', 'posts/view/id:([0-9]+)/slug:([a-zA-Z0-9\-]+)');
 
