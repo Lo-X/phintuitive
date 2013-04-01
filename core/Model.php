@@ -6,70 +6,184 @@
 *	Licensed under The MIT License
 *	Redistributions of files must retain the above copyright notice.
 *
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
+*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
 *	@author Boutter Loïc
 *	@version 2.0.0
 */
 
-class Model {
-	
-	public $db = 'default';
-	
-	public $table = false;
-	public $name  = false;
-	public $primaryKey = 'id';
-	public $lastInsertId = null;
-	public $prefix = '';
-	public $fields = array();
-	public $rules = array();
-	protected $hasOne = array();
-	protected $belongsTo = array();
-	protected $hasMany = array();
-	protected $hasAndBelongsToMany = array();
-	protected $validate = array();
-	private $_fields = array();
-	private $_all_fields = array();
-	private $_invalid_fields = array();
 
+
+/**
+* @brief A model is the representation of a table in the database.
+* @details It contains the structure of that table, relationships and methods to add/modify/create data.
+*/
+class Model {
+
+	protected $db = 'default'; ///< The database to use to retrieve that table
+
+	protected $table = false; ///< The name of the table, automatically deduced from the class name or manually modified by user
+	protected $name = false; ///< A shortcut for the class Name
+
+
+	protected $primaryKey = 'id'; ///< The name of the primary key field in the table
+	protected $fields = array(); ///< An array containing table fields name
+	protected $lastInsertedId = null; ///< The value of the last inserted ID
+
+	protected $rules = array(); ///< An array of rules used to validate data before insertion/update in database
+
+
+	// Relationships
+	protected $hasOne = array(); ///< You can add other tables to that array, the OTHER table contains the foreign key (User has one Profile => Profile.user_id)
+	protected $hasMany = array(); ///< You can add other tables to that array, the OTHER table contains the foreign key (Author has many Article => Article.author_id)
+	protected $belongsTo = array(); ///< You can add other tables to that array, the CURRENT table contains the foreign key (Article belongs to Author => Article.author_id)
+	protected $hasAndBelongsToMany = array(); ///< You can add other tables to that array to add n<-->n relation with another table (Article HABTM Tags => {articles_tags.id, articles_tags.article_id, articles_tags.tag_id)
+	private   $_all_fields = array();
+
+
+	// Connections
 	static $connections = array();
-	
-	public function __construct($inspected = false)
-	{
-		// Open database
+
+
+
+	/**
+	* Construct a Model by deducing as much parameters automatically as possible
+	* @param $beeingInspected This parameters is set to true only when a Model wants to create another Model, without wanting it to create dependent Models as well.
+	*/
+	public function __construct($beeingInspected = false) {
+		// Open the database to establish a connection
 		$this->_openDB();
 
-		// Initialisation
+		// Deduce the table name, if not set by user
 		if($this->table == false)
 			$this->table = strtolower(get_class($this)).'s';
 
+		// Deduce the class name, if not set by user
 		if($this->name == false)
 			$this->name = get_class($this);
 
-		
 
+		// Add the primary key to fields, if fields are empty
 		if(empty($this->fields))
 			$this->fields[] = $this->primaryKey;
 
-		foreach ($this->fields as $field) {
-			$this->_fields[$this->name][$this->name.'_'.$field] = $field;
-		}
-			
 
-
-		// Creation of other models
-		if(!$inspected)
+		// Creation of other models that we depend on
+		if(!$beeingInspected)
 			$this->_inspect();
 
 
-		// Validator
+		// Creation of validator
 		App::load('Rule', 'helper');
 		$this->Validator = new RuleHelper();
 	}
 
-	private function _openDB()
-	{
+
+
+	/**
+	* This method allow you to execute code before the SQL work to be done. 
+	* You can access the options that has been given to the model, alter them, but you MUST return them back. Else it will be considered as an empty array.
+	* @param $options The options given for the find call and SQL query
+	*/
+	public function beforeFind($options) {
+		return $options;
+	}
+
+
+	/**
+	* This method allow you to execute code after a SQL work and before the results to be returned to Controller.
+	* You can alter results but you MUST return them back. Else there will be no results at all.
+	* @param $result The SQL query results, formated.
+	*/
+	public function afterFind($result) {
+		return $result;
+	}
+
+
+	/**
+	* This method allow you to execute your own SQL query
+	* @param $sql The string containing your SQL query
+	* @return Returns non-formated results of your query
+	*/
+	public function rawQuery($sql) {
+		$pdo = Model::$connections[$this->db];
+
+		// Prepare and execute request
+		$pre = $pdo->prepare($sql);
+		$pre->execute();
+		return $pre->fetchAll(PDO::FETCH_OBJ);
+	}
+
+
+	/**
+	* This method is a multifunctional method that allow you to get data in the table, utomatically resolving JOINs with associated tables.
+	* You can find the first element ('first'), all of them ('all') or count them ('count'). Plus you can give options to control what's happening in the model.
+	*
+	* Options you can give are :
+	* 	- conditions : condition ("WHERE" clause) in array, ie: array('MyModel.myfield' => 'value', 'MyModel.myotherfield' => 3)
+	*	- fields : The fields you want to get back, in array, ie: array('myfield', 'MyModel.myotherfield', 'MyAssociatedModel.id')
+	*	- order : The "ORDER BY" string, ie: 'mysortingfield DESC'
+	*	- limit : The number of line to get from the table ("LIMIT" clause). See offset for the starting data to count from
+	*	- offset : The offset in the "LIMIT" clause
+	*
+	* @param $what Can be 'first' (default), 'all' or 'count'
+	* @param $options This is an array that can cointain a lot of information about how the query has to be done. See find() full description for more details.
+	*/
+	public function find($what = 'first', $options = array()) {
+		$pdo = Model::$connections[$this->db];
+		$sql = '';
+		$results = array();
+
+		// Call beforeFind hook with options
+		$options = $this->beforeFind($options);
+
+		// Switch on what, to construct the SQL request accordingly
+		$count = false;
+		switch($what) {
+			case 'all':
+			break;
+
+			case 'count':
+				$count = true;
+			break;
+
+			case 'first':
+			default:
+				$options['limit'] = 1;
+				$options['offset'] = 0;
+			break;
+		}
+
+		// Build request and handle the dependencies hasOne and belongsTo
+		$sql .= $this->_doSelect($options, $count); // SELECT ...
+		$sql .= $this->_doWhere($options);			// ... WHERE ...
+		$sql .= $this->_doOrderBy($options);		// ... ORDER BY ...
+		$sql .= $this->_doLimit($options);			// ... LIMIT ...
+
+		// Prepare and execute request
+		$pre = $pdo->prepare($sql);
+		$pre->execute();
+		$firstResult = $this->_formatSqlResults($pre->fetchAll(PDO::FETCH_OBJ));
+
+		// Handle dependencies hasMany and HABTM, using a second query
+		if(!empty($this->hasMany)) $firstResult = $this->_hasMany($firstResult);
+		if(!empty($this->hasAndBelongsToMany)) $firstResult = $this->_hasAndBelongsToMany($firstResult);
+
+		// Call afterFind hook with results
+		$results = $this->afterFind($firstResult);
+
+		// Return that object
+		return $results;
+	}
+
+
+
+
+	/**
+	* Open the Database connection, given the use database in $db and the database configuration
+	*/
+	private function _openDB() {
 		// Connection to database
-		$conf = Config::$databases[$this->db];
+		$conf = Config::databases()[$this->db];
 		$this->prefix = $conf['prefix'];
 		if(!empty($this->prefix))
 			$this->table = $this->prefix.'_'.$this->table;
@@ -85,106 +199,85 @@ class Model {
 		}
 	}
 
-	private function _inspect()
-	{
-		// Creation of other models
+
+	/**
+	* Auto-inspect all related tables, create a Model for them in order to get their fields
+	*/
+	private function _inspect() {
+		// Creation of other models that we depend on
 		$dependences = array_merge($this->hasOne, $this->belongsTo, $this->hasMany, $this->hasAndBelongsToMany);
 		foreach ($dependences as $m) {
-			App::load($m);
-			$this->$m = new $m(true);
-			$this->_all_fields[$this->$m->name] = current($this->$m->_fields);
+			if(App::load($m))
+				$this->$m = new $m(true);
+			else {
+				echo '<p><b>The model '.$m.' has no file <i>'.$m.'Model.php</i> !</b></p><pre>';
+				debug_print_backtrace();
+				echo '</pre>';
+			}
+			$this->_all_fields[$this->$m->name] = current($this->$m->fields);
 		}
 	}
 
 
+	/**
+	* Construct the SELECT part of SQL query from given options and return that part of the query
+	*/
+	private function _doSelect($options, $count) {
+		$sql = 'SELECT ';
 
-	public function describe($tablename)
-	{
-		$pdo = Model::$connections[$this->db];
-		$sql = 'DESCRIBE '.$tablename;
+		// If its a counting select
+		if($count) {
+			$sql .= 'COUNT('.$this->primaryKey.') as count';
+		} else {
+			// Else, what fields do we want to get back :
+			if(!isset($options['fields'])) {
+				$options['fields'] = $this->fields;
+			}
+			$fields = implode(', ', $options['fields']);
+			$sql .= $fields;
+		}
 
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		$result = $pre->fetchAll();
-		return $result;
-	}
+		$sql .= ' FROM '.$this->table.' as '.$this->name.'';
 
-	private function _doSelect($sql)
-	{
-		$options['fields'] = array();
 
-		foreach (array_merge($this->_fields, $this->_all_fields) as $name => $one) {
-			foreach ($one as $alias => $field) {
-				$options['fields'][] = $name.'.'.$field.' AS '.$alias;
+		/// Handle dependencies (hasOne, hasMany, belongsTo, HABTM)
+		// Belongs to : the current table contains the foreign key
+		if(!empty($this->belongsTo)) {
+			foreach ($this->belongsTo as $rightModel) {
+				$rightTable = $this->$rightModel->table;
+				$sql .= ' LEFT JOIN '.$rightTable.' '.$rightModel.' ON '.$this->name.'.'.strtolower($this->$rightModel->name).'_'.$this->$rightModel->primaryKey.'='.$rightModel.'.'.$this->$rightModel->primaryKey;
 			}
 		}
 
-		$fields = implode(', ', $options['fields']);
-		$sql .= 'SELECT '.$fields.' FROM '.$this->table.' as '.$this->name.'';
-		return $sql;
-	}
-
-	private function _doSelectHABTM($sql, $tables, $fields)
-	{
-		foreach (array_merge($this->_fields, $fields) as $name => $one) {
-			foreach ($one as $alias => $field) {
-				$options['fields'][] = $name.'.'.$field.' AS '.$alias;
+		// HasOne : the distant table contains the forein key
+		if(!empty($this->hasOne)) {
+			foreach ($this->hasOne as $rightModel) {
+				$rightTable = $this->$rightModel->table;
+				$sql .= ' LEFT JOIN '.$rightTable.' '.$rightModel.' ON '.$rightModel.'.'.strtolower($this->name).'_'.$this->primaryKey.'='.$this->name.'.'.$this->primaryKey;
 			}
 		}
-		$table = $tables[0].'_'.$tables[1];
-
-		$fields = implode(', ', $options['fields']);
-		$sql .= 'SELECT '.$fields.' FROM '.$table.' as L';
-		return $sql;
-	}
-
-	private function _doJoin($sql)
-	{
-		// Joins
-		foreach ($this->_all_fields as $name => $one) {
-			$sql .= ' JOIN '.$this->$name->table.' '.$name.' ON '.$this->name.'.'.$this->primaryKey.'='.$name.'.'.strtolower($this->name).'_'.$this->primaryKey;
-		}
 
 		return $sql;
 	}
 
-	private function _doJoinHABTM($sql, $tables, $fields)
-	{
-		// Joins
-		$jointable = $tables[0].'_'.$tables[1];
-		$sql .= ' JOIN '.$this->table.' '.$this->name.' ON '.$this->name.'.'.$this->primaryKey.'=L.'.$this->name.'_'.$this->primaryKey;
-		foreach ($fields as $name => $one) {
-			$sql .= ' JOIN '.$this->$name->table.' '.$this->$name->name.' ON '.$this->$name->name.'.'.$this->$name->primaryKey.'=L.'.$this->$name->name.'_'.$this->$name->primaryKey;
-		}
+	/**
+	* Construct the WHERE part of the SQL query from given options and return that part of the query
+	*/
+	private function _doWhere($options) {
+		$sql = '';
 
-		return $sql;
-	}
-
-	private function _doJoinBelongs($sql)
-	{
-		// Joins
-		foreach ($this->_all_fields as $name => $one) {
-			$sql .= ' JOIN '.$this->$name->table.' '.$name.' ON '.$this->name.'.'.$this->$name->name.'_'.$this->$name->primaryKey.'='.$name.'.'.$this->$name->primaryKey;
-		}
-
-		return $sql;
-	}
-
-	private function _doWhere($sql, $options)
-	{
-		// Conditions
-		if(isset($options['conditions']))
-		{
+		if(isset($options['conditions'])) {
 			$sql .= ' WHERE ';
+			// If the condition is a raw string
 			if(!is_array($options['conditions']))
 				$sql .= $options['conditions'];
-			else
-			{
+			// Else if it's an array, we extract conditions :
+			else {
 				$cond = array();
 				foreach($options['conditions'] as $k => $v)
 				{
 					if(!is_numeric($v))
-						$v = "'".mysql_escape_string($v)."'";
+						$v = "'".mysql_real_escape_string($v)."'"; // Security
 					$cond[] = "$k=$v";
 				}
 				$sql .= implode(' AND ', $cond);
@@ -194,18 +287,26 @@ class Model {
 		return $sql;
 	}
 
-	private function _doOrderBy($sql, $options)
+	/**
+	* Construct the ORDER BY part of the SQL query from given options and return that part of the query
+	*/
+	private function _doOrderBy($options)
 	{
+		$sql = '';
 		// Order By
-		if(isset($options['orderBy'])) {
-			$sql .= ' ORDER BY '.$options['orderBy'];
+		if(isset($options['order'])) {
+			$sql .= ' ORDER BY '.$options['order'];
 		}
 
 		return $sql;
 	}
 
-	private function _doLimit($sql, $options)
+	/**
+	* Construct the ORDER BY part of the SQL query from given options and return that part of the query
+	*/
+	private function _doLimit($options)
 	{
+		$sql = '';
 		// Limit
 		if(isset($options['limit'])) {
 			if(isset($options['offset']))
@@ -216,325 +317,108 @@ class Model {
 		return $sql;
 	}
 
-	private function _formatHasOne($query_result)
+
+	/**
+	* Handle the hasMany relationship by doing other requests and formating results
+	*/
+	private function _hasMany($firstResult) {
+		// HasMany :
+		// Premier select sur la table/model principal avec les éventuelles jointures
+		// second select sur la table associée WHERE tableAssociée.tablePrincipale_id IN (liste_id_recupérés_1ere_requete)
+		// Manipuler les résultats pour contruire le tableau résultant
+
+		$secondResult = array();
+		$list = array();
+		$id = $this->primaryKey;
+
+		foreach ($firstResult as $data) {
+			$data = current($data);
+			$list[] = $data->$id;
+		}
+		$list = implode(',',$list);
+
+		
+		foreach ($this->hasMany as $rightModel) {
+			// Set the conditions (WHERE clause)
+			$options = array('conditions' => $rightModel.'.'.strtolower($this->name).'_'.$this->primaryKey.' IN ('.$list.')');
+			// Find data
+			$secondResult = $this->$rightModel->find('all', $options);
+		}
+		$secondResult = $this->_mergeResults($firstResult, $secondResult);
+		
+
+		return $secondResult;
+	}
+
+
+	private function _hasAndBelongsToMany($firstResult) {
+		// HABTM :
+		// Premier select sur la table/model principal avec les éventuelles jointures
+		// second select de la table associée avec un JOIN (simple) ON tableLiaison.tablePrincipale_id IN (liste_id_récupérés_1ere_requete) AND tableLiaison.autreAssociée_id = tableAssociée.id
+		// Manipuler les résultats pour contruire le tableau résultant
+
+		$secondResult = array();
+		$list = array();
+		$id = $this->primaryKey;
+
+		foreach ($firstResult as $data) {
+			$data = current($data);
+			$list[] = $data->$id;
+		}
+		$list = implode(',',$list);
+
+		
+		foreach ($this->hasAndBelongsToMany as $rightModel) {
+			// Parsing relationship table :
+			$relationTable = '';
+			($this->$rightModel->table < $this->table)? $relationTable = $this->$rightModel->table.'_'.$this->table : $relationTable = $this->table.'_'.$this->$rightModel->table;
+
+			//
+			$sql = 'SELECT * FROM '.$this->$rightModel->table.' as '.$rightModel.' JOIN '.$relationTable.' as R ON R.'.strtolower($this->name).'_'.$this->primaryKey.' IN ('.$list.') AND R.'.strtolower($rightModel).'_'.$this->$rightModel->primaryKey.'='.$rightModel.'.'.$this->$rightModel->primaryKey;
+			
+			// Find data
+			$secondResult = $this->_formatSqlResults($this->rawQuery($sql), $rightModel);
+		}
+		$secondResult = $this->_mergeResults($firstResult, $secondResult);
+
+		return $secondResult;
+	}
+
+
+	/**
+	* Merge/Format primary and secondary results. Used by _hasMany to return well formated results
+	*/
+	private function _mergeResults($firstResult, $secondResult) {
+		if(empty($secondResult))	return $firstResult;
+		
+		// Foreach data, format result
+		foreach ($secondResult as $data) {
+			$dataHeader = key($data);
+			$data = current($data);
+			$pkey = strtolower($this->name).'_'.$this->primaryKey;
+			$id = $data->$pkey;
+			$firstResult[$id][$dataHeader][] = $data;
+		}
+
+		return $firstResult;
+	}
+
+
+	/**
+	* Format common SQL results into a nice array
+	*/
+	private function _formatSqlResults($query_result, $ModelName = null)
 	{
 		$result = array();
-		// Foreach sql result as index => element
-		foreach ($query_result as $n => $elem) {
-			// Foreach of our fields as alias => field
-			foreach (current($this->_fields) as $alias => $field) {
-				// The index->OurName->field = valueOf(element->alias)
-				$result[$n][$this->name][$field] = $elem[$alias];
-			}
-			foreach ($this->_all_fields as $depname => $dep) {
-				foreach ($dep as $alias => $field) {
-					$result[$n][$depname][$field] = $elem[$alias];
-				}
-			}
+		// Foreach sql result, fill the result array by id then model
+		foreach ($query_result as $data) {
+			$pkey = $this->primaryKey;
+			$name = '';
+			$ModelName ? $name = $ModelName : $name = $this->name;
+			$result[$data->$pkey][$name] = $data;
 		}
 
 		return $result;
 	}
 
-	private function _formatHasMany($query_result)
-	{
-		$result = array();
-		// Foreach sql result as index => element
-		foreach ($query_result as $n => $elem) {
-			// Foreach of our fields as alias => field
-			foreach (current($this->_fields) as $alias => $field) {
-				// The index->field = valueOf(element->alias)
-				$result[$elem[$this->name.'_'.$this->primaryKey]][$this->name][$field] = $elem[$alias];
-			}
-			foreach ($this->_all_fields as $depname => $dep) {
-				foreach ($dep as $alias => $field) {
-					$result[$elem[$this->name.'_'.$this->primaryKey]][$depname][$elem[$depname.'_'.$this->$depname->primaryKey]][$field] = $elem[$alias];
-				}
-			}
-		}
-
-		return $result;
-	}
-
-	private function _formatCommon($query_result)
-	{
-		$result = array();
-		// Foreach sql result as index => element
-		foreach ($query_result as $n => $elem) {
-			// Foreach of our fields as alias => field
-			foreach (current($this->_fields) as $alias => $field) {
-				// The index->OurName->field = valueOf(element->alias)
-				$result[$elem[$this->name.'_'.$this->primaryKey]][$this->name][$field] = $elem[$alias];
-			}
-		}
-
-		return $result;
-	}
-
-
-
-	public function find($options = array())
-	{
-		$options = $this->beforeFind($options);
-		$r = array();
-
-		if(!empty($this->hasAndBelongsToMany))
-		{
-			$r = $this->findHABTM($options);
-		}
-		elseif(!empty($this->hasMany))
-		{
-			$r = $this->findHasMany($options);
-		}
-			
-		elseif(!empty($this->hasOne))
-		{
-			$r = $this->findHasOne($options);
-		}
-			
-		elseif(!empty($this->belongsTo))
-		{
-			$r = $this->findBelongsTo($options);
-		}
-		else 	// else, it's a common find
-			$r = $this->findCommon($options);
-			
-
-		
-		return $this->afterFind($r);
-	}
-
-
-
-	private function findHABTM($options)
-	{
-		$pdo = Model::$connections[$this->db];
-
-		$other = $this->hasAndBelongsToMany[0];
-		$tables = array($this->table, $this->$other->table);
-		sort($tables);
-		$fields[$this->$other->name] = $this->_all_fields[$this->$other->name];
-
-		$sql = '';
-		$sql = $this->_doSelectHABTM($sql, $tables, $fields);
-		$sql = $this->_doJoinHABTM($sql, $tables, $fields);
-		$sql = $this->_doWhere($sql, $options);
-		$sql = $this->_doOrderBy($sql, $options);
-		$sql = $this->_doLimit($sql, $options);
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		$res = $pre->fetchAll(PDO::FETCH_ASSOC);
-		return $this->_formatHasMany($res);
-	}
-
-	private function findHasOne($options)
-	{
-		$pdo = Model::$connections[$this->db];
-
-		$sql = '';
-		$sql = $this->_doSelect($sql);
-		$sql = $this->_doJoin($sql);
-		$sql = $this->_doWhere($sql, $options);
-		$sql = $this->_doOrderBy($sql, $options);
-		$sql = $this->_doLimit($sql, $options);
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		$res = $pre->fetchAll(PDO::FETCH_ASSOC);
-		return $this->_formatHasOne($res);
-	}
-
-	private function findHasMany($options)
-	{
-		$pdo = Model::$connections[$this->db];
-
-		$sql = '';
-		$sql = $this->_doSelect($sql);
-		$sql = $this->_doJoin($sql);
-		$sql = $this->_doWhere($sql, $options);
-		$sql = $this->_doOrderBy($sql, $options);
-		$sql = $this->_doLimit($sql, $options);
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		$res = $pre->fetchAll(PDO::FETCH_ASSOC);
-		return $this->_formatHasMany($res);
-	}
-
-	private function findBelongsTo($options)
-	{
-		$pdo = Model::$connections[$this->db];
-
-		$sql = '';
-		$sql = $this->_doSelect($sql);
-		$sql = $this->_doJoinBelongs($sql);
-		$sql = $this->_doWhere($sql, $options);
-		$sql = $this->_doOrderBy($sql, $options);
-		$sql = $this->_doLimit($sql, $options);
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		$res = $pre->fetchAll(PDO::FETCH_ASSOC);
-		return $this->_formatHasOne($res);
-	}
-
-	private function findCommon($options)
-	{
-		$pdo = Model::$connections[$this->db];
-
-		$sql = '';
-		$sql = $this->_doSelect($sql);
-		$sql = $this->_doWhere($sql, $options);
-		$sql = $this->_doOrderBy($sql, $options);
-		$sql = $this->_doLimit($sql, $options);
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		$res = $pre->fetchAll(PDO::FETCH_ASSOC);
-		return $this->_formatCommon($res);
-	}
-
-
-
-	
-	public function count($options)
-	{
-		$pdo = Model::$connections[$this->db];
-		$sql = 'SELECT COUNT(*) FROM '.$this->table.' as '. $this->name.'';
-		
-		// Conditions
-		if(isset($req['conditions']))
-		{
-			$sql .= ' WHERE ';
-			if(!is_array($req['conditions']))
-				$sql .= $req['conditions'];
-			else
-			{
-				$cond = array();
-				foreach($req['conditions'] as $k => $v)
-				{
-					if(!is_numeric($v))
-						$v = "'".mysql_escape_string($v)."'";
-					$cond[] = "$k=$v";
-				}
-				$sql .= implode(' AND ', $cond);
-			}
-		}
-		
-		$pre = $pdo->prepare($sql);
-		$pre->execute();
-		
-		return current(current($pre->fetchAll(PDO::FETCH_BOTH)));
-	}
-
-
-
-
-	public function check($data)
-	{
-		$bool = true;
-		if(empty($this->rules))
-			return true;
-
-		$data = $data[$this->name];
-
-		foreach ($this->rules as $field => $rulesArray) {
-			// If the field isn't even in the posted data, we create a temp one.
-			// The Rule::check will return false if that field was necessary
-			if(empty($data[$field]))
-				$data[$field] = '';
-
-			// Give the field and rules to the RuleHelper (aka: Validator)
-			if(!$this->Validator->check($data[$field], $rulesArray))
-			{
-				// If the RuleHelper returns false, the data is not valid
-				$bool = false;
-				// Add entry in the error array
-				if(isset($rulesArray['message']))
-					$this->_invalid_fields[$field] = $rulesArray['message'];
-				else
-					$this->_invalid_fields[$field] = ' ';
-			}
-		}
-
-		return $bool;
-	}
-
-
-	public function invalidFields()
-	{
-		return $this->_invalid_fields;
-	}
-
-	
-	
-	
-	public function save($data)
-	{
-		$pdo = Model::$connections[$this->db];
-		$key = $this->primaryKey;
-		$sql = "";
-		// On rempli un tableau avec les champs passés
-		$fields = array();
-		$d = array();
-		$data = $data[$this->name];
-		foreach($data as $k => $v) {
-			$fields[] = "$k=:$k";
-			$d[":$k"] = $v;
-		}
-		
-		// S'il s'agit d'une UPDATE
-		if(isset($data[$key]) && !empty($data[$key])) {
-			$sql .= 'UPDATE '.$this->table.' SET '.implode(', ', $fields).' WHERE '.$key.'='.$data[$key];
-		}
-		else { // Sinon il s'agit d'un INSERT
-			$sql .= 'INSERT INTO '.$this->table.' SET '.implode(', ', $fields).'';
-		}
-		
-		// Modification de la BDD
-		$pre = $pdo->prepare($sql);
-		$bool = $pre->execute($d);
-		$this->lastInsertId = $pdo->lastInsertId();
-		return $bool;
-	}
-	
-	public function lastInsertId() {
-		return $this->lastInsertId;
-	}
-	
-	public function delete($id) {
-		$pdo = Model::$connections[$this->db];
-		$sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey}=$id";
-		$pdo->query($sql);
-
-
-		$sql = "OPTIMIZE TABLE {$this->table}";
-		$pdo->query($sql);
-	}
-
-
-
-	public function beforeFind($options)
-	{
-		return $options;
-	}
-
-	public function afterFind($result)
-	{
-		return $result;
-	}
-
-	public function beforeSave() { }
-	public function afterSave() { }
-
-	public function beforeDelete() { }
-	public function afterDelete() { }
-	
-	
 }
