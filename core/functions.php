@@ -13,7 +13,7 @@
 
 function debug($var)
 {
-	if(Config::$debug <= 0)	return;
+	if(!Config::debug())	return;
 	
 	$debug = debug_backtrace();
 	echo '<p><a><strong>'.$debug[0]['file'].'</strong> line '.$debug[0]['line'].'</a></p>';
@@ -24,7 +24,7 @@ function debug($var)
 
 function callstack()
 {
-	if(Config::$debug <= 0)	return;
+	if(!Config::debug())	return;
 	
 	$debug = debug_backtrace();
 	echo '<p><a><strong>Call stack :</strong></a></p>';

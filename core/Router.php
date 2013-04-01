@@ -11,6 +11,8 @@
 *	@version 2.0.0
 */
 
+// Apply roues
+require (App::appDir().'/config/routes.php');
 
 /**
  * The Router class has two main goals : 
@@ -46,15 +48,19 @@ class Router {
 	 * @param string $url 	   The url to parse
 	 * @param Request $request The Request object that will be filled
 	 */
-	static function parse($url, $request)
+	static function parse($request)
 	{
- 		// Remove slashes at begining and end of the url
-		$url = trim($url, '/');
+ 		// If the installation path isn't the root, we remove it from url
+ 		if(Config::installationPath() != '')
+ 			$request->url = str_replace(Config::installationPath(), '', $request->url);
+		// Remove slashes at begining and end of the url
+		$request->url = trim($request->url, '/');
+
 		
 		// Rewirte the url with routes (and named parameters)
 		foreach(Router::$routes as $v)
 		{			
-			if(preg_match($v['catcher'], $url, $match))
+			if(preg_match($v['catcher'], $request->url, $match))
 			{
 				$request->controller = $v['controller'];
 				$request->module = $v['controller'];
@@ -71,7 +77,7 @@ class Router {
 		// If the URL does not belong to a Route, we just extract parameters and prefixes
 
 		// Parameters are separated by slashes, so we explode the url into an array
-		$params = explode('/', $url);
+		$params = explode('/', $request->url);
 		
 		// Handle prefixes
 		if(in_array($params[0], array_keys(self::$prefixes)))

@@ -6,7 +6,7 @@
 *	Licensed under The MIT License
 *	Redistributions of files must retain the above copyright notice.
 *
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
+*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
 *	@author Boutter Loïc
 *	@version 2.0.0
 */
@@ -101,7 +101,7 @@ class Controller {
 		}
 
 		// Cache layout settings
-		if(Config::$cacheLayout)
+		if(Config::get('cacheLayouts'))
 		{
 			App::load('CacheLayout', 'component');
 			$this->CacheLayout = new CacheLayoutComponent($this->layout);
@@ -181,13 +181,13 @@ class Controller {
 		
 
 		// Cache layout settings
-		if(Config::$cacheLayout)
+		if(Config::get('cacheLayouts'))
 		{
 			$this->CacheLayout->setLayout($this->layout);
 			$this->CacheLayout->addFilters(array('content_for_layout' => $content_for_layout));
 
 			// If the layout is not in cache (or out of date)
-			if(!$this->CacheLayout->upToDate(Config::$cacheLayout))
+			if(!$this->CacheLayout->upToDate(Config::get('cacheLayouts')))
 			{
 				ob_start();
 				require($layout);
@@ -279,6 +279,7 @@ class Controller {
 		if($code == 301) {
 			header("HTTP/1.1 301 Moved Permanently");
 		}
+		$this->rendered = true;
 		header("Location: ".Router::url($url));
 	}
 	

@@ -11,15 +11,14 @@
 *	@version 2.0.0
 */
 
-
 // First of all we need the configurations
-require ('config.php');
+require ('core/Config.php');
 
 // Then we need the App class
 require ('core/App.php');
 
 // If we are in debug mode, we use a constant to known how fast (or slow) the page generation is
-if(Config::$debug)
+if(Config::debug())
 	define ('BEGIN_TIME', microtime(true));
 
 
@@ -34,17 +33,7 @@ require (App::core().'/includes.php');
 
 
 
-/*
-	Router section
-
-	Here are the Router prefixes and connections for your controllers.
-*/
-require ('routes.php');
-
-
-
 // The Dispatcher will create the Request, that will contain prefix controller, action, POST informations, etc...
 // and then call the requested Controller action and rendering.
 new Dispatcher();
-
 

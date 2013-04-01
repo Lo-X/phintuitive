@@ -29,7 +29,7 @@ class Dispatcher {
 		$this->request = new Request();
 
 		// Parses the requested url and extract pre-defined Routes, or extract param informations (controller, action, prefix, params)
-		Router::parse($this->request->url, $this->request);
+		Router::parse($this->request);
 
 		// Attempt to load the controller given by the url
 		$controller = $this->loadController();
