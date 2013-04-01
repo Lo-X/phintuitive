@@ -37,7 +37,21 @@ function callstack()
 }
 
 /**
- * Author : Grafikart   Website : www.grafikart.fr
+* Create a valid slug from a string
+*
+* @return The slug, formated with '-'.
+*/
+function createSlug($str, $delimiter = '-') {
+    $slug = iconv('UTF-8', 'ASCII//TRANSLIT', $str);
+    $slug = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $slug);
+    $slug = strtolower(trim($slug, '-'));
+    $slug = preg_replace("/[\/_|+ -]+/", $delimiter, $slug);
+ 
+    return $slug;
+}
+
+/**
+ * @author : Grafikart   Website : www.grafikart.fr
  * Permet de cropper une image au format png/jpg et gif au format souhaité
  *
  * Si la largeur ou la hauteur est mise à 0 la dimension sera automatiquement calculé

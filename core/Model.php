@@ -83,6 +83,7 @@ class Model {
 	* This method allow you to execute code before the SQL work to be done. 
 	* You can access the options that has been given to the model, alter them, but you MUST return them back. Else it will be considered as an empty array.
 	* @param $options The options given for the find call and SQL query
+	* @return Mandatory: you must return a valid array of options
 	*/
 	public function beforeFind($options) {
 		return $options;
@@ -93,9 +94,30 @@ class Model {
 	* This method allow you to execute code after a SQL work and before the results to be returned to Controller.
 	* You can alter results but you MUST return them back. Else there will be no results at all.
 	* @param $result The SQL query results, formated.
+	* @return Mandatory: you must return valid results
 	*/
 	public function afterFind($result) {
 		return $result;
+	}
+
+
+	/**
+	* This method allow you to execute code before the data is saved in database.
+	* You can access and alter the data that is given to this method but you MUST return it back. Else, nothing will be saved at all.
+	* @param $data The data that will be saved in database
+	* @return Mandatory: you must return valid data
+	*/
+	public function beforeSave($data) {
+		return $data;
+	}
+
+
+	/**
+	* Gives you the last insered element's ID.
+	* @return The last inserted ID
+	*/
+	public function lastInsertedId() {
+		return $this->lastInsertedId;
 	}
 
 
@@ -114,8 +136,10 @@ class Model {
 	}
 
 
+
+
 	/**
-	* This method is a multifunctional method that allow you to get data in the table, utomatically resolving JOINs with associated tables.
+	* This method is a multifunctional method that allow you to get data in the table, automatically resolving JOINs with associated tables.
 	* You can find the first element ('first'), all of them ('all') or count them ('count'). Plus you can give options to control what's happening in the model.
 	*
 	* Options you can give are :
@@ -179,6 +203,124 @@ class Model {
 
 
 	/**
+	* The method save allow you to add or modify data in the database, automatically handling the belongsTo relationship.
+	* This method will INSERT data if the primary key isn't set in the data you give. Else it will update each field you give as data.
+	*
+	* Data should have this format :
+	* Array
+	* (
+	*     [Category] => Array
+	*         (
+	*             [title] => My New Category
+	*         )
+	* 
+	*     [Post] => Array
+	*         (
+	*             [title] => My new post
+	*             [content] => This is the new content for my new post !
+	*         )
+	* )
+	* Because in this example Post->belongsTo = Category, this will firstly save the new Category, then save the post and associate it with the category by adding/modifying the field $data[Post]['category_id'] :
+	* Array
+	* (
+	*     [Category] => Array
+	*         (
+	*             [title] => Utilisateurs
+	*         )
+	*
+	*     [Post] => Array
+	*         (
+	*             [title] => Nouvel utilisateur
+	*             [content] => Unnouvel utilisateur a Ã©tÃ© ajoutÃ© !
+	*             [category_id] => 3
+	*         )
+	* )
+	*
+	* @param $data The data you want to save, well formated (see description)
+	* @return A boolean : true if the data has been saved, false if not
+	*/
+	public function save($data) {
+		$pdo = Model::$connections[$this->db];
+		$key = $this->primaryKey;
+		$sql = "";
+
+		// Call beforeSave hook
+		$data = $this->beforeSave($data);
+
+		if(empty($data)) return;
+
+		// Save associated Models
+		if(count($data) > 1) {
+			// we will need this Model specific data
+			$mydata = $data[$this->name];
+			debug($data);
+			foreach ($data as $model => $otherdata) {
+				if(in_array($model, $this->belongsTo)) {
+					$this->$model->save(array($model => $otherdata));
+					$this->$model->lastInsertedId();
+					$data[$this->name][strtolower($this->$model->name).'_'.$this->$model->primaryKey] = $this->$model->lastInsertedId();
+				}
+				debug($otherdata);
+			}
+			
+			debug($data);
+		}
+
+
+		// We fill an array with fields
+		$fields = array();
+		$d = array();
+		$data = $data[$this->name];
+		if(empty($data)) return;
+
+
+		/// Handle automatic fields
+		// If we automatically set the created date
+		if(in_array('created', $this->fields) && !(isset($data[$key]) && !empty($data[$key]))) {
+			$data['created'] = 'NOW()';
+		}
+		else if(in_array('created', $this->fields) && (isset($data[$key]) && !empty($data[$key]))) {
+			$data['updated'] = 'NOW()';
+		}
+
+		debug($data);
+
+
+		foreach($data as $k => $v) {
+			if($k != 'created' && $k != 'updated') {
+				$fields[] = "$k=:$k";
+
+				if(!is_numeric($v))
+					$v = mysql_real_escape_string($v); // Security
+				$d[":$k"] = $v;
+			}
+			else
+				$fields[] = "$k=$v";
+		}
+		
+		// If we need an UPDATE (the primary key field is set)
+		if(isset($data[$key]) && !empty($data[$key])) {
+			$sql .= 'UPDATE '.$this->table.' SET '.implode(', ', $fields).' WHERE '.$key.'='.$data[$key];
+		}
+		else { // Else INSERT
+			$sql .= 'INSERT INTO '.$this->table.' SET '.implode(', ', $fields).'';
+		}
+
+		debug($sql);
+		
+		// Modification de la BDD
+		$pre = $pdo->prepare($sql);
+		$bool = $pre->execute($d);
+		$this->lastInsertedId = $pdo->lastInsertId();
+		return $bool;
+	}
+
+
+
+
+
+
+	/**
 	* Open the Database connection, given the use database in $db and the database configuration
 	*/
 	private function _openDB() {
@@ -233,6 +375,14 @@ class Model {
 			if(!isset($options['fields'])) {
 				$options['fields'] = $this->fields;
 			}
+
+			// Prefix everything that isn't prefixed yet
+			array_walk($options['fields'], function(&$data) {
+				if(strstr($data, '.') == false) {
+					$data = $this->name.'.'.$data;
+				}
+			});
+
 			$fields = implode(', ', $options['fields']);
 			$sql .= $fields;
 		}
