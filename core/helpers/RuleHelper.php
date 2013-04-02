@@ -12,9 +12,6 @@
 */
 
 
-
-
-
 class RuleHelper extends Helper {
 
 

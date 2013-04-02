@@ -1,7 +1,6 @@
 <?php
 require ('Router.php');
 require ('functions.php');
-require ('Cache.php');
 require ('Controller.php');
 require ('Component.php');
 require ('Dispatcher.php');

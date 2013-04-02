@@ -396,7 +396,8 @@ class Model {
 	*/
 	private function _openDB() {
 		// Connection to database
-		$conf = Config::databases()[$this->db];
+		$conf = Config::databases();
+		$conf = $conf[$this->db];
 		$this->prefix = $conf['prefix'];
 		if(!empty($this->prefix))
 			$this->table = $this->prefix.'_'.$this->table;

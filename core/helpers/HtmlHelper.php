@@ -13,8 +13,12 @@
 
 
 
-
-
+/**
+ * HTML Helper is useful to add html tags easily.
+ *
+ * You can have a lot of "head" tags with HtmlHelper methods and a few "body" tags like "img" and "a". You do not need to worry about the path for links, 
+ * the Router will automatically be called and will generate correct links.
+ */
 class HtmlHelper extends Helper
 {
 	protected $doctypes = array('html5'		   => '<!DOCTYPE html>',
@@ -33,39 +37,57 @@ class HtmlHelper extends Helper
 
 	public function doctype($type = 'html5')
 	{
-		return $this->doctypes[$type];
+		return $this->doctypes[$type]."\n";
 	}
 
 	public function charset($type = 'utf-8')
 	{
-		return sprintf($this->tags['charset'], $type);
+		return sprintf($this->tags['charset'], $type)."\n";
+	}
+
+	public function robots($content)
+	{
+		$meta = 'name="robots" content="'.$content.'"';
+		return sprintf($this->tags['meta'], $meta)."\n";
+	}
+
+	public function description($description)
+	{
+		$meta = 'name="description" content="'.$description.'"';
+		return sprintf($this->tags['meta'], $meta)."\n";
+	}
+
+	public function keywords($keywords)
+	{
+		$meta = 'name="keywords" content="'.$keywords.'"';
+		return sprintf($this->tags['meta'], $meta)."\n";
 	}
 
 	public function css($file)
 	{
 		if(preg_match('!http://!', $file))
-			return sprintf($this->tags['css'], $file);
+			return sprintf($this->tags['css'], $file)."\n";
 
 		if($file[0] == '/')
-			return sprintf($this->tags['css'], App::host().$file);
+			return sprintf($this->tags['css'], App::host().$file)."\n";
 
-		return sprintf($this->tags['css'], App::host().'/'.App::themes().'/'.$file);
+		return sprintf($this->tags['css'], App::host().'/'.App::themes().'/'.$file)."\n";
 	}
 
 	public function jQuery($version = '1.8')
 	{
-		return sprintf($this->tags['jquery'], $version);
+		return sprintf($this->tags['jquery'], $version)."\n";
 	}
 
 	public function js($file)
 	{
 		if(preg_match('!http://!', $file))
-			return sprintf($this->tags['js'], $file);
+			return sprintf($this->tags['js'], $file)."\n";
 
 		if($file[0] == '/')
-			return sprintf($this->tags['css'], App::host().$file);
+			return sprintf($this->tags['css'], App::host().$file)."\n";
 
-		return sprintf($this->tags['css'], App::host().'/themes/js/'.$file);
+		return sprintf($this->tags['css'], App::host().'/themes/js/'.$file)."\n";
 	}
 
 	public function link($url, $title = null, $target = null, $confirm = null)
