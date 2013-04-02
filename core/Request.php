@@ -12,13 +12,15 @@
 */
 
 /**
- * This is the most important class with Dispatcher.
- * A Request contains everything you need to know about what led the user to the the final view
+ * @brief This is the most important class with Dispatcher and Router.
+ * @details A Request contains everything you need to know about what led the user to the the final view
+ *
+ * @see Dispatcher, Router
  */
 class Request {
 	
-	public $url;
-	public $prefix = '';
+	public $url;			///< Contains the URL asked by the visitor
+	public $prefix = '';	///< Contains the prefix used. The prefix is before the controller and the action
 	
 	public function __construct() {
 		if(isset($_SERVER['REQUEST_URI']))

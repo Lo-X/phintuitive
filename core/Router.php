@@ -15,10 +15,13 @@
 require (App::appDir().'/config/routes.php');
 
 /**
- * The Router class has two main goals : 
+ * @brief The Router is the core of the website, with the Dispatcher and Request
+ * @details The Router class has two main goals : 
  *  - parse url to valid Request objects by taking account of Routes and Prefixes
  *  - parse url with named parameters (Routes) or with unhanged prefixes to a 'clickable' url
  * You can add Routes with Router::connect() method and add prefixes with Router::prefix() method
+ *
+ * @see Dispatcher, Request
  */
 class Router {
 	

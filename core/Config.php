@@ -50,18 +50,30 @@ class Config {
 
 
 	// Here are some useful accessors
+	/**
+	* Returns wether or not the debug mode is activated
+	*/
 	public static function debug() {
 		return Config::get('debug');
 	}
 
+	/**
+	* Returns the instalation path (ie: '' or '/phintitive')
+	*/
 	public static function installationPath() {
 		return Config::get('installationPath');
 	}
 
+	/**
+	* Returns the actual theme folder
+	*/
 	public static function theme() {
 		return Config::get('theme');
 	}
 
+	/**
+	* Returns the databases configuration
+	*/
 	public static function databases() {
 		return Config::get('databases');
 	}

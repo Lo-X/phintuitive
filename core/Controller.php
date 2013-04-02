@@ -12,8 +12,8 @@
 */
 
 /**
- * This is the base class for all Controllers of your application.
- * Each action should have its method in your Controller, with correct parameters.
+ * @brief This is the base class for all Controllers of your application.
+ * @details Each action should have its method in your Controller, with correct parameters.
  * Plus, you have to implement the method index() because it will be call by default when no action is specified.
  */
 class Controller {

@@ -12,10 +12,10 @@
 */
 
 /**
- * This is the most important class with Request even if you will never use it directly.
- * This class create and initialize a Request that will be send through your application.
+ * @brief This is the most important class with Request and Router even if you will never use it directly.
+ * @details This class create and initialize a Request that will be send through your application.
  *
- * @see Request
+ * @see Request, Router
  */
 class Dispatcher {
 	
@@ -59,6 +59,9 @@ class Dispatcher {
 		$controller->render($this->request->action);
 	}
 	
+	/**
+	* Returns a 404 error to the visitor, when the controller+action he asked does not exist.
+	*/
 	public function error($error) 
 	{
 		$controller = new Controller($this->request);

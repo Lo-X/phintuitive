@@ -24,8 +24,8 @@ define ('JS_DIR', 'js');							// The JS folder directory name
 
 
 /**
- *	The App class provide useful methods to reach folder or specific files.
- *	It also allow you to include specific Controllers, Models, Components or Helpers.
+ *	@brief The App class provide useful methods to reach folder or specific files.
+ *	@details It also allow you to include specific Controllers, Models, Components or Helpers.
  *	You doesn't need to know exactly the folder architecture since App does it for you
  *
  *	@see Router
