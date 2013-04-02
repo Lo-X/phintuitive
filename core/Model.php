@@ -1,7 +1,7 @@
 <?php
 /*
 *	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
+*	Copyright 2013, Boutter Loïc - http://loicboutter.fr
 *
 *	Licensed under The MIT License
 *	Redistributions of files must retain the above copyright notice.
@@ -11,6 +11,20 @@
 *	@version 2.0.0
 */
 
+
+/**
+* This function is used by Model class to compute the name of the relation table from two other tables
+* The rule is : tables are in low case, plural, by alphabetical order, separated by an underscore
+*
+* @param $table1 The first table name in the relationship
+* @param $table2 The second table name in the relationship
+* @return Returns the name of the relation table
+*/
+function computeRelationTable($table1, $table2) {
+	$relationTable = '';
+	($table1 < $table2)? $relationTable = $table1.'_'.$table2 : $relationTable = $table2.'_'.$table1;
+	return $relationTable;
+}
 
 
 /**
@@ -27,7 +41,7 @@ class Model {
 
 	protected $primaryKey = 'id'; ///< The name of the primary key field in the table
 	protected $fields = array(); ///< An array containing table fields name
-	protected $lastInsertedId = null; ///< The value of the last inserted ID
+	protected $lastInsertId = null; ///< The value of the last inserted ID
 
 	protected $rules = array(); ///< An array of rules used to validate data before insertion/update in database
 
@@ -116,8 +130,8 @@ class Model {
 	* Gives you the last insered element's ID.
 	* @return The last inserted ID
 	*/
-	public function lastInsertedId() {
-		return $this->lastInsertedId;
+	public function lastInsertId() {
+		return $this->lastInsertId;
 	}
 
 
@@ -203,10 +217,11 @@ class Model {
 
 
 	/**
-	* The method save allow you to add or modify data in the database, automatically handling the belongsTo relationship.
+	* The method save allow you to add or modify data in the database, automatically handling the belongsTo relationship (and only that one).
 	* This method will INSERT data if the primary key isn't set in the data you give. Else it will update each field you give as data.
 	*
 	* Data should have this format :
+	* @code
 	* Array
 	* (
 	*     [Category] => Array
@@ -220,7 +235,9 @@ class Model {
 	*             [content] => This is the new content for my new post !
 	*         )
 	* )
+	* @endcode
 	* Because in this example Post->belongsTo = Category, this will firstly save the new Category, then save the post and associate it with the category by adding/modifying the field $data[Post]['category_id'] :
+	* @code
 	* Array
 	* (
 	*     [Category] => Array
@@ -231,10 +248,12 @@ class Model {
 	*     [Post] => Array
 	*         (
 	*             [title] => Nouvel utilisateur
-	*             [content] => Unnouvel utilisateur a Ã©tÃ© ajoutÃ© !
+	*             [content] => This is the new content for my new post !
 	*             [category_id] => 3
 	*         )
 	* )
+	* @endcode
+	*
 	*
 	* @param $data The data you want to save, well formated (see description)
 	* @return A boolean : true if the data has been saved, false if not
@@ -257,8 +276,7 @@ class Model {
 			foreach ($data as $model => $otherdata) {
 				if(in_array($model, $this->belongsTo)) {
 					$this->$model->save(array($model => $otherdata));
-					$this->$model->lastInsertedId();
-					$data[$this->name][strtolower($this->$model->name).'_'.$this->$model->primaryKey] = $this->$model->lastInsertedId();
+					$data[$this->name][strtolower($this->$model->name).'_'.$this->$model->primaryKey] = $this->$model->lastInsertId();
 				}
 				debug($otherdata);
 			}
@@ -311,8 +329,49 @@ class Model {
 		// Modification de la BDD
 		$pre = $pdo->prepare($sql);
 		$bool = $pre->execute($d);
-		$this->lastInsertedId = $pdo->lastInsertId();
+		$this->lastInsertId = $pdo->lastInsertId();
 		return $bool;
+	}
+
+
+
+	/**
+	* Removes a line in the table, indexed by given ID. 
+	* If this Model got hasOne, hasMany and/or hasAndBelongsToMany relationship, you can remove associated data as well. See parameter $recursive
+	*
+	* @param $id The id (value of primary key) that index the line you want to remove from database
+	* @param $recursive If set to true, linked models that have a foreign key on the line you're about to remove will be removed as well
+	*/
+	public function delete($id, $recursive = false) {
+		$pdo = Model::$connections[$this->db];
+
+		if($recursive) {
+			foreach ($this->hasOne as $model) {
+				$sql = 'DELETE FROM '.$this->$model->table.' WHERE '.strtolower($this->name).'_'.$this->primaryKey.'='.$id;
+				$pdo->query($sql);
+				$sql = "OPTIMIZE TABLE {$this->$model->table}";
+				$pdo->query($sql);
+			}
+			foreach ($this->hasMany as $model) {
+				$sql = 'DELETE FROM '.$this->$model->table.' WHERE '.strtolower($this->name).'_'.$this->primaryKey.'='.$id;
+				$pdo->query($sql);
+				$sql = "OPTIMIZE TABLE {$this->$model->table}";
+				$pdo->query($sql);
+			}
+			foreach ($this->hasAndBelongsToMany as $model) {
+				$rtable = computeRelationTable($this->table, $this->$model->table);
+				$sql = 'DELETE FROM '.$rtable.' WHERE '.strtolower($this->name).'_'.$this->primaryKey.'='.$id;
+				$pdo->query($sql);
+				$sql = "OPTIMIZE TABLE {$rtable}";
+				$pdo->query($sql);
+			}
+		}
+
+		$sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey}=$id";
+		$pdo->query($sql);
+
+		$sql = "OPTIMIZE TABLE {$this->table}";
+		$pdo->query($sql);
 	}
 
 
@@ -520,10 +579,9 @@ class Model {
 		
 		foreach ($this->hasAndBelongsToMany as $rightModel) {
 			// Parsing relationship table :
-			$relationTable = '';
-			($this->$rightModel->table < $this->table)? $relationTable = $this->$rightModel->table.'_'.$this->table : $relationTable = $this->table.'_'.$this->$rightModel->table;
+			$relationTable = computeRelationTable($this->$rightModel->table, $this->table);
 
-			//
+			// Request
 			$sql = 'SELECT * FROM '.$this->$rightModel->table.' as '.$rightModel.' JOIN '.$relationTable.' as R ON R.'.strtolower($this->name).'_'.$this->primaryKey.' IN ('.$list.') AND R.'.strtolower($rightModel).'_'.$this->$rightModel->primaryKey.'='.$rightModel.'.'.$this->$rightModel->primaryKey;
 			
 			// Find data
