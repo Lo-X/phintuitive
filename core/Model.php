@@ -50,7 +50,8 @@ class Model {
 	protected $hasOne = array(); ///< You can add other tables to that array, the OTHER table contains the foreign key (User has one Profile => Profile.user_id)
 	protected $hasMany = array(); ///< You can add other tables to that array, the OTHER table contains the foreign key (Author has many Article => Article.author_id)
 	protected $belongsTo = array(); ///< You can add other tables to that array, the CURRENT table contains the foreign key (Article belongs to Author => Article.author_id)
-	protected $hasAndBelongsToMany = array(); ///< You can add other tables to that array to add n<-->n relation with another table (Article HABTM Tags => {articles_tags.id, articles_tags.article_id, articles_tags.tag_id)
+	protected $hasAndBelongsToMany = array(); ///< You can add other tables to that array to add n<-->n relation with another table (Article HABTM Tags => {articles_tags.id, articles_tags.article_id, articles_tags.tag_id})
+	protected $useRecursion = true; ///< The recursion is the ability to search for data in related tables. If set to true, this recursion will be done automagically (can take several SQL request, depending on the relation between tables). Else only the data from the Model table will be collected. Default: true
 	private   $_all_fields = array();
 
 
@@ -150,6 +151,15 @@ class Model {
 	}
 
 
+	/**
+	* Set whether or not the Model should use recursion. For more details about recursion, see protected $useRecursion attribute.
+	* @param $bool True or False
+	*/
+	public function useRecursion($bool) {
+		$this->useRecursion = $bool;
+	}
+
+
 
 
 	/**
@@ -203,8 +213,10 @@ class Model {
 		$firstResult = $this->_formatSqlResults($pre->fetchAll(PDO::FETCH_OBJ));
 
 		// Handle dependencies hasMany and HABTM, using a second query
-		if(!empty($this->hasMany)) $firstResult = $this->_hasMany($firstResult);
-		if(!empty($this->hasAndBelongsToMany)) $firstResult = $this->_hasAndBelongsToMany($firstResult);
+		if($this->useRecursion) {
+			if(!empty($this->hasMany)) $firstResult = $this->_hasMany($firstResult);
+			if(!empty($this->hasAndBelongsToMany)) $firstResult = $this->_hasAndBelongsToMany($firstResult);
+		}
 
 		// Call afterFind hook with results
 		$results = $this->afterFind($firstResult);
@@ -451,7 +463,7 @@ class Model {
 
 		/// Handle dependencies (hasOne, hasMany, belongsTo, HABTM)
 		// Belongs to : the current table contains the foreign key
-		if(!empty($this->belongsTo)) {
+		if(!empty($this->belongsTo) && $this->useRecursion) {
 			foreach ($this->belongsTo as $rightModel) {
 				$rightTable = $this->$rightModel->table;
 				$sql .= ' LEFT JOIN '.$rightTable.' '.$rightModel.' ON '.$this->name.'.'.strtolower($this->$rightModel->name).'_'.$this->$rightModel->primaryKey.'='.$rightModel.'.'.$this->$rightModel->primaryKey;
@@ -459,7 +471,7 @@ class Model {
 		}
 
 		// HasOne : the distant table contains the forein key
-		if(!empty($this->hasOne)) {
+		if(!empty($this->hasOne) && $this->useRecursion) {
 			foreach ($this->hasOne as $rightModel) {
 				$rightTable = $this->$rightModel->table;
 				$sql .= ' LEFT JOIN '.$rightTable.' '.$rightModel.' ON '.$rightModel.'.'.strtolower($this->name).'_'.$this->primaryKey.'='.$this->name.'.'.$this->primaryKey;
