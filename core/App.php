@@ -12,8 +12,11 @@
 */
 
 // We define some usefull constants
-define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/'.Config::installationPath());	// The domain url
-define ('THEME_DIR', 'themes/'.Config::theme());	// The theme directory name
+if(Config::installationPath() != '')
+	define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/'.Config::installationPath().'/');	// The domain url
+else
+	define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/');	// The domain url
+define ('THEME_DIR', 'themes/'.Config::theme().'/');	// The theme directory name
 define ('CORE_DIR', 'core');						// The core directory name
 define ('APP_DIR', 'app');							// The app directory name
 define ('HELPERS_DIR', 'helpers');					// The helpers directory name
