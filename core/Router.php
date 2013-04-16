@@ -1,18 +1,20 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
+
+
 
 // Apply roues
-require (App::appDir().'/config/routes.php');
+require (App::appDir().'config/routes.php');
 
 /**
  * @brief The Router is the core of the website, with the Dispatcher and Request
@@ -58,6 +60,8 @@ class Router {
  			$request->url = str_replace(Config::installationPath(), '', $request->url);
 		// Remove slashes at begining and end of the url
 		$request->url = trim($request->url, '/');
+
+		//debug($request); debug(App::root()); exit();
 
 		
 		// Rewirte the url with routes (and named parameters)

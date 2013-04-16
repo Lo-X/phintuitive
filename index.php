@@ -1,39 +1,23 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
-
-// First of all we need the configurations
-require ('core/Config.php');
-
-// Then we need the App class
-require ('core/App.php');
-
-// If we are in debug mode, we use a constant to known how fast (or slow) the page generation is
-if(Config::debug())
-	define ('BEGIN_TIME', microtime(true));
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
 
 
-// Start the Session
-session_start();
+define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/');	// The domain url
+define ('ROOT', dirname(__FILE__).'/');					// Phintuitive root
+define ('APP_DIR', ROOT.'app/');						// The app directory name
+define ('CORE_DIR', ROOT.'core/');						// The core directory name
+define ('LIBS_DIR', ROOT.'libs/');						// The libs directory name
 
 
-
-
-// This will include all core files that we need to continue
-require (App::core().'/includes.php');
-
-
-
-// The Dispatcher will create the Request, that will contain prefix controller, action, POST informations, etc...
-// and then call the requested Controller action and rendering.
-new Dispatcher();
-
+// We're at wrong place here, need to go into app/ dir
+require ('app/index.php');

@@ -1,15 +1,17 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
+
+
 
 
 /**
@@ -35,9 +37,9 @@ Config::set('cacheLayouts', false);
 Config::set('securitySalt', '6mghwbckz8t5kqn6yywnoq4v313v&xa5tgobz5tr2p8owxe12v');
 
 /**
-* Sets what theme you want to use. Each theme has its folder at the website root and contains template files for the website design.
+* Sets what layout is the default layout you want to use. A layout can be changed in Controllers as well.
 */
-Config::set('theme', 'default');
+Config::set('layout', 'default');
 
 /**
 * These configurations set information about your email. This is used by Email Helper in order to send you emails. You may want to modify these values.

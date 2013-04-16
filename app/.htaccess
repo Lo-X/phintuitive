@@ -5,4 +5,4 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
 
-RewriteRule ^(.*)$ app/$1 [L]
+RewriteRule ^(.*)$ ./index.php [L]

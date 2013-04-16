@@ -1,15 +1,17 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
+
+
 
 /**
 * @brief This class handle configurations options. The configurations are set in "hard" into many files in the app/config/ folder.
@@ -65,10 +67,10 @@ class Config {
 	}
 
 	/**
-	* Returns the actual theme folder
+	* Returns the actual layout filename
 	*/
-	public static function theme() {
-		return Config::get('theme');
+	public static function layout() {
+		return Config::get('layout');
 	}
 
 	/**
@@ -80,8 +82,8 @@ class Config {
 }
 
 // Configuration files needed by PhIntuitive
-require('app/config/core.php');
-require('app/config/database.php');
-require('app/config/localization.php');
+require APP_DIR.'config/core.php';
+require APP_DIR.'config/database.php';
+require APP_DIR.'config/localization.php';
 
 // Here you can add your own configuration files :

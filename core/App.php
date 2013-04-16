@@ -1,28 +1,15 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
-
-// We define some usefull constants
-if(Config::installationPath() != '')
-	define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/'.Config::installationPath().'/');	// The domain url
-else
-	define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/');	// The domain url
-define ('THEME_DIR', 'themes/'.Config::theme().'/');	// The theme directory name
-define ('CORE_DIR', 'core');						// The core directory name
-define ('APP_DIR', 'app');							// The app directory name
-define ('HELPERS_DIR', 'helpers');					// The helpers directory name
-define ('COMPONENTS_DIR', 'components');			// The components directory name
-define ('JS_DIR', 'js');							// The JS folder directory name
-
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
 
 
 
@@ -58,7 +45,7 @@ class App
 				$name = ucfirst($name.'Controller');
 
 				// Get the controller filepath
-				$file = App::appDir().'/controllers/'.$name.'.php';
+				$file = App::appDir().'controllers/'.$name.'.php';
 				
 				// Include it or die
 				if(file_exists($file)) {
@@ -74,7 +61,7 @@ class App
 				$name = ucfirst($name);
 
 				// Get the model filepath
-				$file = App::appDir().'/models/'.$name.'.php';
+				$file = App::appDir().'models/'.$name.'.php';
 				
 				// Include it or die
 				if(file_exists($file)) {
@@ -90,7 +77,7 @@ class App
 				$name = ucfirst($name.'Component');
 
 				// Get the component filepath
-				$file = App::components().'/'.$name.'.php';
+				$file = App::components().$name.'.php';
 
 				// Include it or die
 				if(file_exists($file)) {
@@ -106,7 +93,7 @@ class App
 				$name = ucfirst($name.'Helper');
 
 				// Get the helper filepath
-				$file = App::helpers().'/'.$name.'.php';
+				$file = App::helpers().$name.'.php';
 
 				// Include it or die
 				if(file_exists($file)) {
@@ -131,7 +118,7 @@ class App
 	 */
 	public static function getView($module, $view)
 	{
-		return App::appDir().'/views/'.$module.'/'.$view.'.php';
+		return App::appDir().'views/'.$module.'/'.$view.'.php';
 	}
 
 	/**
@@ -142,14 +129,14 @@ class App
 	 */
 	public static function getLayout($layout)
 	{
-		return App::themes().'/'.$layout.'.php';
+		return App::layouts().$layout.'.php';
 	}
 
 
 	/**
-	 *	Return the host url without te final slash
+	 *	Return the host url 
 	 *	
-	 * 	@return The host url, ie: http://localhost
+	 * 	@return The host url, ie: http://localhost/
 	 */
 	public static function host()
 	{
@@ -159,11 +146,11 @@ class App
 	/**
 	 *	Returns the root folder
 	 *
-	 *	@return The root folder, ie: /
+	 *	@return The root folder, ie: / or www/phuntuitive/
 	 */
 	public static function root()
 	{
-		return '/';
+		return ROOT;
 	}
 
 	/**
@@ -203,7 +190,7 @@ class App
 	*/
 	public static function cacheDir()
 	{
-		return App::appDir().'/cache';
+		return App::appDir().'cache/';
 	}
 
 	/**
@@ -213,7 +200,7 @@ class App
 	*/
 	public static function cache()
 	{
-		return App::appDir().'/cache';
+		return App::appDir().'cache/';
 	}
 
 	/**
@@ -223,7 +210,7 @@ class App
 	*/
 	public static function helpersDir()
 	{
-		return App::core().'/'.HELPERS_DIR;
+		return App::core().'helpers/';
 	}
 
 	/**
@@ -233,7 +220,7 @@ class App
 	*/
 	public static function helpers()
 	{
-		return App::core().'/'.HELPERS_DIR;
+		return App::core().'helpers/';
 	}
 
 	/**
@@ -243,7 +230,7 @@ class App
 	*/
 	public static function componentsDir()
 	{
-		return App::core().'/'.COMPONENTS_DIR;
+		return App::core().'components/';
 	}
 
 	/**
@@ -253,7 +240,7 @@ class App
 	*/
 	public static function components()
 	{
-		return App::core().'/'.COMPONENTS_DIR;
+		return App::core().'components/';
 	}
 
 	/**
@@ -262,9 +249,9 @@ class App
 	*	@return Default: themes/default
 	*	@see Config::$theme
 	*/
-	public static function themesDir()
+	public static function layoutsDir()
 	{
-		return THEME_DIR;
+		return APP_DIR.'layouts/';
 	}
 
 	/**
@@ -273,9 +260,9 @@ class App
 	*	@return Default: themes/default
 	*	@see Config::$theme
 	*/
-	public static function themes()
+	public static function layouts()
 	{
-		return THEME_DIR;
+		return APP_DIR.'layouts/';
 	}
 
 	/**
@@ -285,7 +272,7 @@ class App
 	*/
 	public static function jsDir()
 	{
-		return JS_DIR;
+		return App::layouts().'js/';
 	}
 
 	/**
@@ -295,7 +282,7 @@ class App
 	*/
 	public static function js()
 	{
-		return JS_DIR;
+		return App::layouts().'js/';
 	}
 
 

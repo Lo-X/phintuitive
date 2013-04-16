@@ -1,15 +1,17 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
+
+
 
 /**
  * @brief This is the most important class with Request and Router even if you will never use it directly.
@@ -72,8 +74,9 @@ class Dispatcher {
 	{
 		$controller = new Controller($this->request);
 		header("HTTP/1.0 404 Not Found");
-		$layout = App::themes().'/404.php';
+		$layout = App::layouts().'404.php';
 		$content_for_layout = $error;
+		debug($this->request);
 		require($layout);
 		die();
 	}
