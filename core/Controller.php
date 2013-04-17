@@ -1,15 +1,17 @@
 <?php
-/*
-*	PhIntuitive - Fast websites development framework
-*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
-*
-*	Licensed under The MIT License
-*	Redistributions of files must retain the above copyright notice.
-*
-*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
-*	@author Boutter Loïc
-*	@version 2.0.0
-*/
+/**
+ *	PhIntuitive - Fast websites development framework
+ *	Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *
+ *	Licensed under The MIT License
+ *	Redistributions of files must retain the above copyright notice.
+ *
+ *	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
+ *	@author Boutter Loïc
+ *	@since 2.0.0
+ */
+
+
 
 /**
  * @brief This is the base class for all Controllers of your application.
@@ -60,7 +62,7 @@ class Controller {
 
 		// Load all Models
 		foreach ($this->uses as $modelName) {
-			if(!App::load($modelName) && Config::$debug > 0)
+			if(!App::load($modelName) && Config::debug())
 			{
 				exit('Try to load Model '.$modelName.' that does not exists !');
 			}
@@ -75,8 +77,10 @@ class Controller {
 
 		// Loading helpers
 		foreach ($this->helpers as $helperName) {
-			if(!App::load($helperName, 'helper') && Config::$debug > 0)
+			if(!App::load($helperName, 'helper') && Config::debug())
 				exit('Try to load Helper '.$helperName.' that does not exists !');
+			$helperClass = $helperName.'Helper';
+			$this->$helperName = new $helperClass($this->request);
 		}
 
 
@@ -84,7 +88,7 @@ class Controller {
 
 		// Loading components
 		foreach ($this->components as $componentName) {
-			if(!App::load($componentName, 'component') && Config::$debug > 0)
+			if(!App::load($componentName, 'component') && Config::debug())
 				exit('Try to load Component '.$componentName.' that does not exists !');
 
 			// Instances components in controller attributes

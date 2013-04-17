@@ -74,9 +74,8 @@ class Dispatcher {
 	{
 		$controller = new Controller($this->request);
 		header("HTTP/1.0 404 Not Found");
-		$layout = App::layouts().'404.php';
+		$layout = App::root().App::layouts().'404.php';
 		$content_for_layout = $error;
-		debug($this->request);
 		require($layout);
 		die();
 	}

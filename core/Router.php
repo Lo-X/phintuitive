@@ -14,7 +14,7 @@
 
 
 // Apply roues
-require (App::appDir().'config/routes.php');
+require (ROOT.APP_DIR.'config/routes.php');
 
 /**
  * @brief The Router is the core of the website, with the Dispatcher and Request
@@ -58,10 +58,9 @@ class Router {
  		// If the installation path isn't the root, we remove it from url
  		if(Config::installationPath() != '')
  			$request->url = str_replace(Config::installationPath(), '', $request->url);
+
 		// Remove slashes at begining and end of the url
 		$request->url = trim($request->url, '/');
-
-		//debug($request); debug(App::root()); exit();
 
 		
 		// Rewirte the url with routes (and named parameters)
@@ -174,6 +173,20 @@ class Router {
 	 */
 	static function url($url)
 	{
+		// If array controller, actions, params
+		if(is_array($url)) {
+			$ctrl = isset($url['controller']) ? $url['controller'] : 'content';
+			$action = isset($url['action']) ? $url['action'] : 'index';
+			$params = array();
+			foreach ($url as $key => $value) {
+				if($key != 'controller' && $key != 'action') {
+					$params[] = $value;
+				}
+			}
+			return App::host().$ctrl.'/'.$action.'/'.implode('/', $params);
+		}
+
+
 		// Reformated urls
 		foreach(self::$routes as $v)
 		{
@@ -186,7 +199,7 @@ class Router {
 						$v['redir'] = preg_replace("/:$k/", $value, $v['redir']);
 					}
 				}
-				return App::host().'/'.$v['redir'];
+				return App::host().$v['redir'];
 			}
 		}
 		
@@ -196,7 +209,7 @@ class Router {
 			if(strpos($url, $v) === 0)
 				$url = str_replace($v, $k, $url);
 		}
-		return App::host().'/'.$url;
+		return App::host().$url;
 	}
 }
 

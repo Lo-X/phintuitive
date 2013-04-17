@@ -82,8 +82,8 @@ class Config {
 }
 
 // Configuration files needed by PhIntuitive
-require APP_DIR.'config/core.php';
-require APP_DIR.'config/database.php';
-require APP_DIR.'config/localization.php';
+require ROOT.APP_DIR.'config/core.php';
+require ROOT.APP_DIR.'config/database.php';
+require ROOT.APP_DIR.'config/localization.php';
 
 // Here you can add your own configuration files :

@@ -1,9 +1,8 @@
 <?php
-$this->Html = new HtmlHelper();
 $keywords = isset($keywords_for_layout) ? $keywords_for_layout : 'PhIntuitive, framework, php, websites, development, Boutter, Loïc';
 $description = isset($description_for_layout) ? $description_for_layout : 'PhIntuitive - Fast websites development php framework';
-echo $this->Html->doctype();
 ?>
+<!DOCTYPE html>
 <html>
 	<head>
 		<?php echo $this->Html->charset(); ?>
@@ -16,14 +15,14 @@ echo $this->Html->doctype();
 		<?php echo $this->Html->js('myscripts.js'); ?>
 		<!--
 		*	PhIntuitive - Fast websites development framework
-		*	Copyright 2012, Boutter Loïc - http://loicboutter.fr
+		*	Copyright 2013, Boutter Loïc - http://loicboutter.fr
 		*
 		*	Licensed under The MIT License
 		*	Redistributions of files must retain the above copyright notice.
 		*
-		*	@copyright Copyright 2012, Boutter Loïc - http://loicboutter.fr
+		*	@copyright Copyright 2013, Boutter Loïc - http://loicboutter.fr
 		*	@author Boutter Loïc
-		*	@version 2.0.0
+		*	@since 2.0.0
 		-->
 	</head>
 	
@@ -31,7 +30,6 @@ echo $this->Html->doctype();
 		
 		<header class="header">
 			<h3><a href="<?php echo App::host() ?>">PhIntuitive</a></h3>
-			<?php //echo phi_menu('principal') ?>
 		</header>
 		
 		<section class="container">
