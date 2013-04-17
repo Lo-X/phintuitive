@@ -143,14 +143,15 @@ class Controller {
 	 */
 	public function render($view) {
 		if($this->rendered)	return false;
-			
-		/*// Vérification des droits :
-		if (preg_match("!admin_!", $this->request->action) && (!$this->session->isAdmin()))
-			$this->redirect('users/login/');*/
 		
 		// Get view and layout
 		$view = App::getView($this->request->module, $view);
 		$layout = App::getLayout($this->layout);
+
+		// If the view does not exist, go to e404
+		if(!is_file($view)) {
+			$this->e404('Try to load a view '.$view.' that does not exist !');
+		}
 
 		// Extract variables that has been set by the controller
 		extract($this->vars);
@@ -240,7 +241,19 @@ class Controller {
 	{
 		header("HTTP/1.0 404 Not Found");
 		$this->set('message', $msg);
-		$this->render('404');
+		if(file_exists(App::getView($this->request->module, '405'))) {
+			$this->render('404');
+		} else {
+			$message = 'Big problem dude ! The 404 view of controller <i>'.$this->request->controller.'</i> does not exist !';
+			$this->set('message', $message);
+			ob_start();
+			require(ROOT.APP_DIR.'views/404.php');
+			// Set the famous $content_for_layout variable
+			$content_for_layout = ob_get_clean();
+			require(App::getLayout($this->layout));
+			$this->rendered = true;
+		}
+
 		die();
 	}
 	

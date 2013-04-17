@@ -112,7 +112,7 @@ class HtmlHelper extends Helper
 		if($file[0] == '/')
 			return sprintf($this->tags['css'], App::host().$file)."\n";
 
-		return sprintf($this->tags['css'], App::layouts().'css/'.$file)."\n";
+		return sprintf($this->tags['css'], App::host().App::layouts().'css/'.$file)."\n";
 	}
 
 	/**
@@ -142,7 +142,7 @@ class HtmlHelper extends Helper
 		if($file[0] == '/')
 			return sprintf($this->tags['css'], App::host().trim($file, '/'))."\n";
 
-		return sprintf($this->tags['css'], App::layouts().'js/'.$file)."\n";
+		return sprintf($this->tags['css'], App::host().App::layouts().'js/'.$file)."\n";
 	}
 
 	/**
@@ -207,7 +207,7 @@ class HtmlHelper extends Helper
 		elseif($url[0] == '/')
 			$url = App::host().trim($url, '/');
 		else
-			$url = App::layouts().'img/'.$url;
+			$url = App::host().App::layouts().'img/'.$url;
 
 		$others = '';
 		if($alt)	$others .= ' alt="'.$alt.'"';

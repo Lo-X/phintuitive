@@ -128,7 +128,7 @@ class App
 	 */
 	public static function getView($module, $view)
 	{
-		return App::appDir().'views/'.$module.'/'.$view.'.php';
+		return ROOT.App::appDir().'views/'.$module.'/'.$view.'.php';
 	}
 
 	/**
@@ -139,7 +139,7 @@ class App
 	 */
 	public static function getLayout($layout)
 	{
-		return App::layouts().$layout.'.php';
+		return ROOT.App::layouts().$layout.'.php';
 	}
 
 
