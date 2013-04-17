@@ -18,7 +18,7 @@
 * Sets the installation path of PhIntuitive.
 * This path is very important in case you do not install PhIntuitive at the root of your website
 */
-Config::set('installationPath', '');
+Config::set('installationPath', 'phintuitive');
 
 /**
 * Sets if your poject is in debug mode or not. While in debug (value= true) mode, you can have errors or debug messages printed onto your website.

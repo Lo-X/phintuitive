@@ -45,7 +45,7 @@ class App
 				$name = ucfirst($name.'Controller');
 
 				// Get the controller filepath
-				$file = App::appDir().'controllers/'.$name.'.php';
+				$file = ROOT.APP_DIR.'controllers/'.$name.'.php';
 				
 				// Include it or die
 				if(file_exists($file)) {
@@ -61,7 +61,7 @@ class App
 				$name = ucfirst($name);
 
 				// Get the model filepath
-				$file = App::appDir().'models/'.$name.'.php';
+				$file = ROOT.APP_DIR.'models/'.$name.'.php';
 				
 				// Include it or die
 				if(file_exists($file)) {
@@ -77,15 +77,20 @@ class App
 				$name = ucfirst($name.'Component');
 
 				// Get the component filepath
-				$file = App::components().$name.'.php';
+				$file = ROOT.App::components().$name.'.php';
+				$alternate_file = ROOT.APP_DIR.'controllers/components/'.$name.'.php';
 
 				// Include it or die
 				if(file_exists($file)) {
 					require_once($file);
 					return true;
+				} elseif(file_exists($alternate_file)) {
+					require_once($alternate_file);
+					return true;
 				}
-				else
+				else {
 					return false;
+				}
 			break;
 
 			case 'helper':
@@ -93,15 +98,20 @@ class App
 				$name = ucfirst($name.'Helper');
 
 				// Get the helper filepath
-				$file = App::helpers().$name.'.php';
+				$file = ROOT.App::helpers().$name.'.php';
+				$alternate_file = ROOT.APP_DIR.'controllers/components/'.$name.'.php';
 
 				// Include it or die
 				if(file_exists($file)) {
 					require_once($file);
 					return true;
+				} else if(file_exists($alternate_file)) {
+					require_once($alternate_file);
+					return true;
 				}
-				else
+				else {
 					return false;
+				}
 			break;
 
 			default:break;
@@ -136,10 +146,15 @@ class App
 	/**
 	 *	Return the host url 
 	 *	
-	 * 	@return The host url, ie: http://localhost/
+	 * 	@return The host url with installation path, ie: http://localhost/
 	 */
 	public static function host()
 	{
+		$ipath = Config::installationPath();
+		
+		if(!empty($ipath))
+			return HOST.$ipath.'/';
+
 		return HOST;
 	}
 

@@ -14,9 +14,9 @@
 
 define ('HOST', 'http://'.$_SERVER['HTTP_HOST'].'/');	// The domain url
 define ('ROOT', dirname(__FILE__).'/');					// Phintuitive root
-define ('APP_DIR', ROOT.'app/');						// The app directory name
-define ('CORE_DIR', ROOT.'core/');						// The core directory name
-define ('LIBS_DIR', ROOT.'libs/');						// The libs directory name
+define ('APP_DIR', 'app/');						// The app directory name
+define ('CORE_DIR', 'core/');						// The core directory name
+define ('LIBS_DIR', 'libs/');						// The libs directory name
 
 
 // We're at wrong place here, need to go into app/ dir

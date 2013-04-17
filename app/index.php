@@ -21,24 +21,24 @@ if(!defined('ROOT')) {
 }
 
 if(!defined('APP_DIR')) {
-	define ('APP_DIR', ROOT.'app/');	// The app directory name
+	define ('APP_DIR', 'app/');	// The app directory name
 }
 
 if(!defined('CORE_DIR')) {
-	define ('CORE_DIR', ROOT.'core/');	// The core directory name
+	define ('CORE_DIR', 'core/');	// The core directory name
 }
 
 if(!defined('LIBS_DIR')) {
-	define ('LIBS_DIR', ROOT.'libs/');	// The libs directory name
+	define ('LIBS_DIR', 'libs/');	// The libs directory name
 }
 
 
 
 // First of all we need the configurations
-require CORE_DIR.'Config.php';
+require ROOT.CORE_DIR.'Config.php';
 
 // Then we need the App class
-require CORE_DIR.'App.php';
+require ROOT.CORE_DIR.'App.php';
 
 // If we are in debug mode, we use a constant to known how fast (or slow) the page generation is
 if(Config::debug()) define ('BEGIN_TIME', microtime(true));
@@ -51,7 +51,7 @@ session_start();
 
 
 // This will include all core files that we need to continue
-require (App::core().'/includes.php');
+require (ROOT.CORE_DIR.'/includes.php');
 
 
 
